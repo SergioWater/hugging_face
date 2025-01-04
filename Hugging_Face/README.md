@@ -89,6 +89,5 @@ Hyperparameter tuning with frameworks like Optuna or Ray Tune.
 Deployment (e.g., wrapping the model in a web app using Flask or FastAPI).
 
 
-License
-This project is open-sourced under the MIT License - see the LICENSE file for details.
+
 
