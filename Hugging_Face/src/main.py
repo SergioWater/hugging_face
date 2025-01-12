@@ -20,12 +20,9 @@ def main():
     model, processor = get_model_and_processor("facebook/wav2vec2-base-960h")
 
     # 3. Train 
-    # (In reality, you'd likely do more epochs and handle more robust training.)
     model = train_model(model, processor, train_dataset, epochs=1, batch_size=4)
 
     # 4. Inference
-    # Let's just pick a few sample audio clips from "test_dataset" to demonstrate
-    # We'll manually form a list of paths
     sample_audio_paths = [
         f"{data_dir}/clips/sample_clip_1.wav",
         f"{data_dir}/clips/sample_clip_2.wav"
