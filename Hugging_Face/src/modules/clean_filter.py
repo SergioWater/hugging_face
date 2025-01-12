@@ -2,6 +2,18 @@
 
 import pandas as pd
 import os
+def drop_missing_audio_rows(df, audio_dir):
+    """Remove rows where the 'path' file doesn't exist."""
+    keep_rows = []
+    for idx, row in df.iterrows():
+        audio_path = row["path"]
+        # e.g. if your dataset expects 'clips/<filename>'
+        full_path = os.path.join(audio_dir, audio_path)
+        if os.path.exists(full_path):
+            keep_rows.append(True)
+        else:
+            keep_rows.append(False)
+    return df[keep_rows]
 
 def clean_and_filter_tsv(input_file_path: str, output_file_path: str):
     """
