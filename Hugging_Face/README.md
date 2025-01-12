@@ -89,5 +89,38 @@ Hyperparameter tuning with frameworks like Optuna or Ray Tune.
 Deployment (e.g., wrapping the model in a web app using Flask or FastAPI).
 
 
+.
+├── .gitignore
+├── data
+│   ├── cleaned
+│   │   ├── clips
+│   │   │   └─ (audio files, etc.)
+│   │   ├── dev.tsv
+│   │   ├── test.tsv
+│   │   ├── train.tsv
+│   │   ├── unvalidated_sentences.tsv
+│   │   ├── validated_sentences.tsv
+│   │   └── validated.tsv
+│   ├── dev.tsv
+│   ├── test.tsv
+│   ├── train.tsv
+│   ├── unvalidated_sentences.tsv
+│   ├── validated_sentences.tsv
+│   └── validated.tsv
+├── src
+│   ├── modules
+│   │   ├── __init__.py
+│   │   ├── clean_filter.py
+│   │   ├── data_preprocessing.py
+│   │   ├── **data_preprocessing_pandas.py**
+│   │   ├── model_definition.py
+│   │   ├── model_inference.py
+│   │   ├── model_training.py
+│   └── main.py
+├── LICENSE.txt
+├── README.md
+└── requirements.txt
+
+
 
 
