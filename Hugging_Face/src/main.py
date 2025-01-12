@@ -7,7 +7,7 @@ from modules.model_inference import predict
 
 def main():
     # 1. Load the dataset
-    data_dir = "/Users/water/Documents/Coding/Ai/Undergoing/Hugging_Face/data"
+    data_dir = "/Users/water/Documents/Coding/Ai/hugging_face/Hugging_Face/data/cleaned"
     dataset = load_data(data_dir)
 
     # We'll just split out the "train" portion for training right now
@@ -19,7 +19,7 @@ def main():
     # 2. Get the model + processor
     model, processor = get_model_and_processor("facebook/wav2vec2-base-960h")
 
-    # 3. Train 
+    # 3. Train
     model = train_model(model, processor, train_dataset, epochs=1, batch_size=4)
 
     # 4. Inference
