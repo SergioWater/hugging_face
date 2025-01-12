@@ -1,8 +1,5 @@
-# [[ main.py ]]
-
 # from modules.data_preprocessing import load_data
 from modules.data_preprocessing_pandas import load_data_with_pandas  # [HIGHLIGHT: NEW IMPORT]
-
 from modules.model_definition import get_model_and_processor
 from modules.model_training import train_model
 from modules.model_inference import predict
@@ -21,14 +18,15 @@ def main():
     model, processor = get_model_and_processor("facebook/wav2vec2-base-960h")
 
     # 3. Train
-    model = train_model(model, processor, train_dataset, epochs=1, batch_size=4)
+    print("DEBUG: About to train with epochs=2...")
+    model = train_model(model, processor, train_dataset, epochs=2, batch_size=1)
+
 
     # 4. Inference
     sample_audio_paths = [
-        f"{data_dir}/clips/sample_clip_1.wav",
-        f"{data_dir}/clips/sample_clip_2.wav"
+        f"{data_dir}/clips_data/sample_clip_1.wav",
+        f"{data_dir}/clips_data/sample_clip_2.wav"
     ]
-    
     predictions = predict(model, processor, sample_audio_paths)
     print("Predictions:", predictions)
 
