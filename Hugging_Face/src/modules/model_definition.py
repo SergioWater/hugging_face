@@ -3,9 +3,13 @@
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
 def get_model_and_processor(model_name: str = "facebook/wav2vec2-base-960h"):
-    """
-    model_name: The huggingface hub name for the Wav2Vec2 model.
-    """
-    processor = Wav2Vec2Processor.from_pretrained(model_name)
-    model = Wav2Vec2ForCTC.from_pretrained(model_name)
+    print(f"========== [DEBUG] ENTER get_model_and_processor with model_name={model_name} ==========")
+
+    # Setting force_download=True to avoid certain warnings about resume
+    processor = Wav2Vec2Processor.from_pretrained(model_name, force_download=True)
+    model = Wav2Vec2ForCTC.from_pretrained(model_name, force_download=True)
+
+    print("========== [DEBUG] Wav2Vec2Processor & Wav2Vec2ForCTC loaded ==========")
+    print("========== [DEBUG] EXIT get_model_and_processor ==========")
     return model, processor
+    

@@ -1,17 +1,16 @@
-# main.py
+# [[ main.py ]]
 
-from transformers import logging
-# logging.set_verbosity_error()  
-# ^ Uncomment this if you want to hush the "You should probably TRAIN..." message.
+# If you want to reduce logs from transformers/huggingface_hub, you can optionally do:
+# from transformers import logging
+# logging.set_verbosity_error()
 
-# from modules.data_preprocessing import load_data
 from modules.data_preprocessing_pandas import load_data_with_pandas
 from modules.model_definition import get_model_and_processor
 from modules.model_training import train_model
 from modules.model_inference import predict
 
 def main():
-    print("========== [DEBUG] Starting main() ==========")
+    print("========== [DEBUG] ENTER main() ==========")
 
     # 1. Load the dataset via pandas
     data_dir = "/Users/water/Documents/Coding/Ai/hugging_face/Hugging_Face/data/cleaned"
@@ -24,6 +23,7 @@ def main():
     train_dataset = dataset["train"]
     dev_dataset   = dataset["dev"]
     test_dataset  = dataset["test"]
+
     print(f"========== [DEBUG] train_dataset size: {len(train_dataset)} ==========")
     print(f"========== [DEBUG] dev_dataset size:   {len(dev_dataset)} ==========")
     print(f"========== [DEBUG] test_dataset size:  {len(test_dataset)} ==========")
@@ -47,6 +47,8 @@ def main():
     predictions = predict(model, processor, sample_audio_paths)
     print("========== [DEBUG] Inference completed. Predictions: ==========")
     print(predictions)
+
+    print("========== [DEBUG] EXIT main() ==========")
 
 if __name__ == "__main__":
     main()
