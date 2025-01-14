@@ -2,6 +2,8 @@
 
 import pandas as pd
 from datasets import load_dataset, Audio
+from datasets import Features, Value
+import csv
 
 def load_data(data_dir: str):
     """
@@ -15,6 +17,8 @@ def load_data(data_dir: str):
         "dev":   f"{data_dir}/dev.tsv",
         "test":  f"{data_dir}/test.tsv"
     }
+    print(f"========== [DEBUG] data_files = {data_files} ==========")
+
     dataset = load_dataset(
         "csv",
         data_files=data_files,
@@ -35,4 +39,5 @@ def preprocess_audio(examples, processor):
     """
     audio_arrays = [x["array"] for x in examples["path"]]
     inputs = processor(audio_arrays, sampling_rate=16000, return_tensors="pt", padding=True)
+    print("========== [DEBUG] EXIT preprocess_audio() ==========")
     return inputs

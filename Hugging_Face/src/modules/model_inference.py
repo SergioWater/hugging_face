@@ -19,7 +19,6 @@ def predict(model, processor, audio_paths):
             predictions.append("[Error Loading Audio]")
             continue
 
-        # If you need to resample to 16k, do it here (librosa, sox, or torchaudio).
         print("========== [DEBUG] Running processor on loaded audio ==========")
         inputs = processor(
             speech,

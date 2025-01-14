@@ -91,6 +91,20 @@ Deployment (e.g., wrapping the model in a web app using Flask or FastAPI).
 
 .
 ├── .gitignore
+├── LICENSE.txt
+├── README.md
+├── requirements.txt
+├── cv-corpus-9.0-2022-04-27
+│   └── rw
+│       ├── clips
+│       │   └─ (e.g. common_voice_rw_26260276.mp3, etc.)
+│       ├── dev.tsv
+│       ├── test.tsv
+│       ├── train.tsv
+│       └── validated.tsv
+├── scripts
+│   ├── tsv_to_json.py
+│   └── decode_resample.py
 ├── data
 │   ├── cleaned
 │   │   ├── clips
@@ -107,19 +121,17 @@ Deployment (e.g., wrapping the model in a web app using Flask or FastAPI).
 │   ├── unvalidated_sentences.tsv
 │   ├── validated_sentences.tsv
 │   └── validated.tsv
-├── src
-│   ├── modules
-│   │   ├── __init__.py
-│   │   ├── clean_filter.py
-│   │   ├── data_preprocessing.py
-│   │   ├── **data_preprocessing_pandas.py**
-│   │   ├── model_definition.py
-│   │   ├── model_inference.py
-│   │   ├── model_training.py
-│   └── main.py
-├── LICENSE.txt
-├── README.md
-└── requirements.txt
+└── src
+    ├── main.py
+    └── modules
+        ├── __init__.py
+        ├── clean_filter.py
+        ├── data_preprocessing.py
+        ├── data_preprocessing_pandas.py
+        ├── model_definition.py
+        ├── model_inference.py
+        ├── model_training.py
+
 
 
 

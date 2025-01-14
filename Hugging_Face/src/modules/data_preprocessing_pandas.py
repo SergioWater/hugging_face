@@ -4,7 +4,7 @@ import pandas as pd
 from datasets import Dataset, DatasetDict
 import os
 
-print("========== [DEBUG] data_preprocessing_pandas loaded from:", __file__, "==========")
+print("========== [DEBUG] data_preprocessing_pandas loaded from: $$$$$$$$$", __file__, "$$$$$$$$$ ==========")
 
 def _prepend_clips_if_missing(df):
     print("========== [DEBUG] ENTER _prepend_clips_if_missing ==========")
@@ -29,27 +29,34 @@ def _prepend_clips_if_missing(df):
 
 def _drop_missing_audio_rows(df, data_dir):
     print("========== [DEBUG] ENTER _drop_missing_audio_rows ==========")
-    print(f"========== [DEBUG] df size: {len(df)} | data_dir={data_dir} ==========")
+    print(f"========== [DEBUG] Initial DataFrame size: {len(df)} ==========")
+    print(f"========== [DEBUG] Data directory: {data_dir} ==========")
+    
     keep_rows = []
     dropped_count = 0
+
     for idx, row in df.iterrows():
         audio_path = row["path"]
         if isinstance(audio_path, str):
             full_path = os.path.join(data_dir, audio_path)
             if os.path.exists(full_path):
                 keep_rows.append(True)
+                print(f"========== [DEBUG] File found: {full_path} ==========")
             else:
                 keep_rows.append(False)
                 dropped_count += 1
+                print(f"========== [WARN] Missing file: {full_path} ==========")
         else:
             keep_rows.append(False)
             dropped_count += 1
+            print(f"========== [WARN] Invalid path at index {idx}: {audio_path} ==========")
 
     filtered_df = df[keep_rows]
-    print(f"========== [DEBUG] Dropped {dropped_count} rows referencing missing audio files ==========")
-    print(f"========== [DEBUG] After filtering, {len(filtered_df)} rows remain ==========")
+    print(f"========== [DEBUG] Dropped {dropped_count} rows referencing missing or invalid audio files ==========")
+    print(f"========== [DEBUG] Remaining DataFrame size: {len(filtered_df)} ==========")
     print("========== [DEBUG] EXIT _drop_missing_audio_rows ==========")
     return filtered_df
+
 
 def load_data_with_pandas(data_dir: str):
     print(f"========== [DEBUG] ENTER load_data_with_pandas. data_dir={data_dir} ==========")
@@ -58,9 +65,9 @@ def load_data_with_pandas(data_dir: str):
     dev_path   = os.path.join(data_dir, "dev.tsv")
     test_path  = os.path.join(data_dir, "test.tsv")
 
-    train_df = pd.read_csv(train_path, sep="\t", dtype=str, quoting=3)
-    dev_df   = pd.read_csv(dev_path,   sep="\t", dtype=str, quoting=3)
-    test_df  = pd.read_csv(test_path,  sep="\t", dtype=str, quoting=3)
+    train_df = pd.read_csv(train_path, engine="python", sep=r"\t+(\s+)?", dtype=str, quoting=3)
+    dev_df   = pd.read_csv(dev_path,   engine="python", sep=r"\t+(\s+)?", dtype=str, quoting=3)
+    test_df  = pd.read_csv(test_path,  engine="python", sep=r"\t+(\s+)?", dtype=str, quoting=3)
 
     print(f"[DEBUG] train_df loaded with {len(train_df)} rows")
     print(f"[DEBUG] dev_df loaded with {len(dev_df)} rows")
