@@ -7,33 +7,33 @@ import pandas as pd
 from datasets import Dataset, DatasetDict
 import os
 
-print("========== [DEBUG] data_preprocessing_pandas loaded from: $$$$$$$$$", __file__, "$$$$$$$$$ ==========")
+# print("========== [DEBUG] data_preprocessing_pandas loaded from: $$$$$$$$$", __file__, "$$$$$$$$$ ==========")
 
 def _prepend_validated_clips_if_missing(df):
-    print("========== [DEBUG] ENTER _prepend_validated_clips_if_missing ==========")
+    # print("========== [DEBUG] ENTER _prepend_validated_clips_if_missing ==========")
     fixed_paths = []
     for idx, val in df["path"].items():
-        print(f"========== [DEBUG] path val={val} at idx={idx} ==========")
+        # print(f"========== [DEBUG] path val={val} at idx={idx} ==========")
         if isinstance(val, str):
             # Only check if not already starts with "validated_clips/"
             if not val.startswith("validated_clips/"):
                 new_path = f"validated_clips/{val}"
-                print(f"========== [DEBUG] PREPEND: {val} -> {new_path} ==========")
+                # print(f"========== [DEBUG] PREPEND: {val} -> {new_path} ==========")
                 fixed_paths.append(new_path)
             else:
-                print(f"========== [DEBUG] NO PREPEND needed for {val} ==========")
+                # print(f"========== [DEBUG] NO PREPEND needed for {val} ==========")
                 fixed_paths.append(val)
         else:
-            print(f"========== [DEBUG] path val is NOT a string => {val}. We'll keep as is.")
+            # print(f"========== [DEBUG] path val is NOT a string => {val}. We'll keep as is.")
             fixed_paths.append(val)
     df["path"] = fixed_paths
-    print("========== [DEBUG] EXIT _prepend_validated_clips_if_missing ==========")
+    # print("========== [DEBUG] EXIT _prepend_validated_clips_if_missing ==========")
     return df
 
 def _drop_missing_audio_rows(df, data_dir):
-    print("========== [DEBUG] ENTER _drop_missing_audio_rows ==========")
-    print(f"========== [DEBUG] Initial DataFrame size: {len(df)} ==========")
-    print(f"========== [DEBUG] Data directory: {data_dir} ==========")
+    # print("========== [DEBUG] ENTER _drop_missing_audio_rows ==========")
+    # print(f"========== [DEBUG] Initial DataFrame size: {len(df)} ==========")
+    # print(f"========== [DEBUG] Data directory: {data_dir} ==========")
     
     keep_rows = []
     dropped_count = 0
@@ -52,14 +52,14 @@ def _drop_missing_audio_rows(df, data_dir):
             dropped_count += 1
 
     filtered_df = df[keep_rows]
-    print(f"========== [DEBUG] Dropped {dropped_count} rows referencing missing or invalid audio files ==========")
-    print(f"========== [DEBUG] Remaining DataFrame size: {len(filtered_df)} ==========")
-    print("========== [DEBUG] EXIT _drop_missing_audio_rows ==========")
+    # print(f"========== [DEBUG] Dropped {dropped_count} rows referencing missing or invalid audio files ==========")
+    # print(f"========== [DEBUG] Remaining DataFrame size: {len(filtered_df)} ==========")
+    # print("========== [DEBUG] EXIT _drop_missing_audio_rows ==========")
     return filtered_df
 
 
 def load_data_with_pandas(data_dir: str):
-    print(f"========== [DEBUG] ENTER load_data_with_pandas. data_dir={data_dir} ==========")
+    # print(f"========== [DEBUG] ENTER load_data_with_pandas. data_dir={data_dir} ==========")
 
     # [HIGHLIGHT: CHANGED]
     # We only read validated.tsv. The name of the file is "validated.tsv" 
@@ -68,14 +68,14 @@ def load_data_with_pandas(data_dir: str):
     validated_path = os.path.join(data_dir, "validated.tsv")
     validated_df = pd.read_csv(validated_path, engine="python", sep=r"\t+(\s+)?", dtype=str, quoting=3)
 
-    print(f"[DEBUG] validated_df loaded with {len(validated_df)} rows")
+    # print(f"[DEBUG] validated_df loaded with {len(validated_df)} rows")
 
     # [HIGHLIGHT: CHANGED]
     # Instead of prepending "clips/", we now prepend "validated_clips/" 
     validated_df = _prepend_validated_clips_if_missing(validated_df)
     validated_df = _drop_missing_audio_rows(validated_df, data_dir)
 
-    print("========== [DEBUG] Creating Hugging Face Dataset from pandas dataframe ==========")
+    # print("========== [DEBUG] Creating Hugging Face Dataset from pandas dataframe ==========")
     validated_hf = Dataset.from_pandas(validated_df)
 
     # [HIGHLIGHT: CHANGED]
@@ -84,5 +84,5 @@ def load_data_with_pandas(data_dir: str):
         "train": validated_hf
     })
 
-    print("========== [DEBUG] EXIT load_data_with_pandas, returning DatasetDict with single train split ==========")
+    # print("========== [DEBUG] EXIT load_data_with_pandas, returning DatasetDict with single train split ==========")
     return dataset_dict
