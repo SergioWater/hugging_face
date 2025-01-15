@@ -1,10 +1,11 @@
-# [[ clean_filter.py ]]
+# clean_filter.py
+#  - Removed debug prints.
 
 import pandas as pd
 import os
 
 def drop_missing_audio_rows(df, audio_dir):
-    print("========== [DEBUG] ENTER drop_missing_audio_rows in clean_filter.py ==========")
+    # (Removed debug prints about ENTER/EXIT)
     keep_rows = []
     for idx, row in df.iterrows():
         audio_path = row["path"]
@@ -13,11 +14,10 @@ def drop_missing_audio_rows(df, audio_dir):
             keep_rows.append(True)
         else:
             keep_rows.append(False)
-    print("========== [DEBUG] EXIT drop_missing_audio_rows in clean_filter.py ==========")
     return df[keep_rows]
 
 def clean_and_filter_tsv(input_file_path: str, output_file_path: str):
-    print(f"========== [DEBUG] ENTER clean_and_filter_tsv with input={input_file_path}, output={output_file_path} ==========")
+    # (Removed debug prints about ENTER/EXIT)
     data = pd.read_csv(input_file_path, sep='\t', dtype=str)
 
     numeric_cols = ["up_votes", "down_votes"]
@@ -48,11 +48,9 @@ def clean_and_filter_tsv(input_file_path: str, output_file_path: str):
         data = data[data["sentence"].str.len() < 200]
 
     data.to_csv(output_file_path, sep='\t', index=False)
-    print(f"========== [DEBUG] Cleaned data saved to: {output_file_path} ==========")
-    print("========== [DEBUG] EXIT clean_and_filter_tsv ==========")
 
 def main():
-    print("========== [DEBUG] ENTER clean_filter.py main() ==========")
+    # (Removed debug prints)
     input_dir = "./Hugging_Face/data"
     output_dir = "./Hugging_Face/data/cleaned"
 
@@ -62,10 +60,7 @@ def main():
     for tsv_file in files_to_process:
         input_path = os.path.join(input_dir, tsv_file)
         output_path = os.path.join(output_dir, tsv_file)
-        print(f"========== [DEBUG] Processing {input_path} ==========")
         clean_and_filter_tsv(input_path, output_path)
-
-    print("========== [DEBUG] EXIT clean_filter.py main() ==========")
 
 if __name__ == "__main__":
     main()

@@ -94,27 +94,13 @@ Deployment (e.g., wrapping the model in a web app using Flask or FastAPI).
 ├── LICENSE.txt
 ├── README.md
 ├── requirements.txt
-├── cv-corpus-9.0-2022-04-27
-│   └── rw
-│       ├── clips
-│       │   └─ (e.g. common_voice_rw_26260276.mp3, etc.)
-│       ├── dev.tsv
-│       ├── test.tsv
-│       ├── train.tsv
-│       └── validated.tsv
-├── scripts
-│   ├── tsv_to_json.py
-│   └── decode_resample.py
 ├── data
-│   ├── cleaned
-│   │   ├── clips
-│   │   │   └─ (audio files, etc.)
-│   │   ├── dev.tsv
-│   │   ├── test.tsv
-│   │   ├── train.tsv
-│   │   ├── unvalidated_sentences.tsv
-│   │   ├── validated_sentences.tsv
-│   │   └── validated.tsv
+│   ├── clips
+│   │      └─ (audio files, etc.)
+│   ├── mp3_clips
+│   │      └─ sample_clips_1.mp3 and sample_clips_2.mp3
+│   ├── validated_clips
+│   │      └─ audio clips that are validated through the validated.tsv
 │   ├── dev.tsv
 │   ├── test.tsv
 │   ├── train.tsv
