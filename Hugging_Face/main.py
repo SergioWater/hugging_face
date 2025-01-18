@@ -1,3 +1,8 @@
+"""
+Entry point for training and inference using a Wav2Vec2 model.
+This script loads the data, filters/shuffles it, and trains the model.
+"""
+
 import sys
 import torch
 from pathlib import Path
@@ -9,19 +14,40 @@ from modules.model_training import train_model
 from modules.model_inference import predict
 
 def main():
+    """
+    Main function that:
+    1) Locates the data directory.
+    2) Loads the dataset (skip file check if we want).
+    3) Shuffles/filters the dataset.
+    4) Creates the model and processor.
+    5) Trains the model, optionally skipping the slow pre-check in train_model.
+    6) Saves the model and runs inference on sample audio.
+    """
+
     # Get the absolute path of the directory where THIS file (main.py) is located
     base_dir = Path(__file__).resolve().parent
 
-    # 1) Path to data folder
+    # 1) Path to data folder (this is the CORRECT path to your "data" directory)
     data_dir = base_dir / "data"
-    # 2) Path to the CSV/TSV files (like validated.tsv)
-    #    We will load these with load_data_with_pandas().
 
-    # 3) Load the dataset
-    dataset = load_data_with_pandas(str(data_dir))
+    # 2) Decide whether we want to skip the file-existence check in load_data_with_pandas
+    skip_file_check_global = True  # <--- Toggle True/False here
+
+    # 3) Load the dataset (skip existence check if skip_file_check_global is True)
+    dataset = load_data_with_pandas(
+        data_dir=str(data_dir),
+        skip_exist_check=skip_file_check_global
+    )
     train_dataset = dataset["train"]
 
+    # Shuffle & optionally select half
+    train_dataset = train_dataset.shuffle(seed=42)
+    half_size = len(train_dataset) // 2
+    train_dataset = train_dataset.select(range(half_size))
+
+    print(f"Training on half the data: {half_size} samples")
     print("Number of training samples:", len(train_dataset))
+
     if len(train_dataset) == 0:
         print("ERROR: There is no data to train on. Exiting...")
         sys.exit(1)
@@ -35,14 +61,16 @@ def main():
     checkpoint_dir = base_dir / "checkpoints"
 
     # 6) Train the model
+    #    We pass "root_data_dir" to ensure AudioDataset can build correct paths
     model = train_model(
-        model,
-        processor,
-        train_dataset,
+        model=model,
+        processor=processor,
+        train_dataset=train_dataset,
+        root_data_dir=str(data_dir),  # <--- pass the correct data folder
         epochs=10,
-        batch_size=2,  # smaller batch to reduce memory usage
+        batch_size=2,
         learning_rate=1e-5,
-        save_checkpoint_dir=str(checkpoint_dir)  # must be a string for .save_pretrained()
+        save_checkpoint_dir=str(checkpoint_dir),
     )
 
     # 7) Final Save
