@@ -1,0 +1,9 @@
+# Ignore everything in Hugging_Face/data
+Hugging_Face/data/*
+Hugging_Face/checkpoints/*
+Hugging_Face/modules/__pycache__/*
+modules/*
+# Do not ignore the wav_clips folder and its contents
+!Hugging_Face/data/wav_clips/
+!Hugging_Face/data/wav_clips/**
+

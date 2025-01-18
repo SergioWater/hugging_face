@@ -73,21 +73,21 @@ class AudioDataset(Dataset):
         inputs = self.processor(
             audio_array,
             sampling_rate=16000,
+            text=text,
             return_tensors="pt",
             padding=True,
-            return_attention_mask=True
         )
 
         # Convert text to labels using the same processor
         with self.processor.as_target_processor():
             labels = self.processor(text, return_tensors="pt").input_ids
 
-        return {
-            "input_values": inputs["input_values"].squeeze(0),
-            "attention_mask": inputs["attention_mask"].squeeze(0),
-            "labels": labels.squeeze(0)
-        }
 
+        return {
+            "input_values":    inputs["input_values"].squeeze(0),
+            "attention_mask":  inputs["attention_mask"].squeeze(0),
+            "labels":          inputs["labels"].squeeze(0),
+        }
     def __len__(self):
         return len(self.dataset)
 
