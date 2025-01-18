@@ -1,11 +1,11 @@
-# clean_filter.py
-#  - Removed debug prints.
-
 import pandas as pd
 import os
 
 def drop_missing_audio_rows(df, audio_dir):
-    # (Removed debug prints about ENTER/EXIT)
+    """
+    Goes through each row in the DataFrame, checks if the audio file exists,
+    and keeps only those rows for which the audio file is found.
+    """
     keep_rows = []
     for idx, row in df.iterrows():
         audio_path = row["path"]
@@ -17,7 +17,9 @@ def drop_missing_audio_rows(df, audio_dir):
     return df[keep_rows]
 
 def clean_and_filter_tsv(input_file_path: str, output_file_path: str):
-    # (Removed debug prints about ENTER/EXIT)
+    """
+    Reads a TSV, cleans and filters the data, then writes out a new TSV.
+    """
     data = pd.read_csv(input_file_path, sep='\t', dtype=str)
 
     numeric_cols = ["up_votes", "down_votes"]
@@ -50,9 +52,9 @@ def clean_and_filter_tsv(input_file_path: str, output_file_path: str):
     data.to_csv(output_file_path, sep='\t', index=False)
 
 def main():
-    # (Removed debug prints)
-    input_dir = "./Hugging_Face/data"
-    output_dir = "./Hugging_Face/data/cleaned"
+    # Example usage: read from data/ and output to data/cleaned/
+    input_dir = "./data"
+    output_dir = "./data/cleaned"
 
     os.makedirs(output_dir, exist_ok=True)
 

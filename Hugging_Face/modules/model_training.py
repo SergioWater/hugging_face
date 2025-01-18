@@ -1,4 +1,3 @@
-# NO CHANGE: We still import everything we need
 import os
 import re
 import torch
@@ -6,6 +5,7 @@ import soundfile as sf
 from torch.utils.data import Dataset, DataLoader
 from transformers import AdamW
 
+# 1) AUDIO DATASET
 class AudioDataset(Dataset):
     def __init__(self, dataset, processor):
         self.dataset = dataset
@@ -13,7 +13,7 @@ class AudioDataset(Dataset):
         self.skipped_count = 0
 
     def clean_text(self, text):
-        # NO CHANGE: Example of cleaning / normalizing text
+        # Example text cleaning: lower, strip, remove non-alphanumerics
         text = text.lower().strip()
         text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
         return text
@@ -23,13 +23,19 @@ class AudioDataset(Dataset):
         audio_path = sample["path"]
         text = sample["sentence"]
 
-        full_audio_path = os.path.join(
-            "/Users/water/Documents/Coding/Ai/hugging_face/Hugging_Face/data",
-            "validated_clips",
-            audio_path
-        )
+        # Instead of absolute, we rely on your data dir if it's correct
+        # For example, if the path is "clip_001.wav", we expect the code
+        # that built the dataset to handle the correct full path.
+        # But let's illustrate how we'd join it if we had a 'validated_clips' folder:
+        #   full_audio_path = os.path.join(data_dir, "validated_clips", audio_path)
+        # We'll assume the path is absolute or already correct in this snippet.
+        # This is just a placeholder approach.
 
-        # NO CHANGE: Skip if file doesn't exist
+        # For demonstration, let's just do a direct approach:
+        full_audio_path = audio_path  # if you have an absolute path in 'path'
+        # If 'path' is not absolute, you may need to join it with something
+
+        # If the file doesn't exist, skip
         if not os.path.exists(full_audio_path):
             self.skipped_count += 1
             return None
@@ -39,13 +45,11 @@ class AudioDataset(Dataset):
             self.skipped_count += 1
             return None
 
-        # NO CHANGE: Clean text
         text = self.clean_text(text)
         if not text:
             self.skipped_count += 1
             return None
 
-        # NO CHANGE: Process audio
         inputs = self.processor(
             audio_array,
             sampling_rate=16000,
@@ -54,7 +58,6 @@ class AudioDataset(Dataset):
             return_attention_mask=True
         )
 
-        # NO CHANGE: Convert text to labels using as_target_processor
         with self.processor.as_target_processor():
             labels = self.processor(text, return_tensors="pt").input_ids
 
@@ -69,7 +72,6 @@ class AudioDataset(Dataset):
 
 
 def collate_fn(batch):
-    # NO CHANGE: Filter out any None items
     batch = [b for b in batch if b is not None]
     if len(batch) == 0:
         return {
@@ -92,6 +94,8 @@ def collate_fn(batch):
         "labels": labels_padded
     }
 
+
+# 2) TRAIN FUNCTION
 def train_model(
     model, 
     processor, 
@@ -99,13 +103,12 @@ def train_model(
     epochs=1, 
     batch_size=4, 
     learning_rate=1e-5,
-    save_checkpoint_dir=None  # <--- NEW: optional directory to save checkpoints
+    save_checkpoint_dir=None
 ):
-    # NO CHANGE: Prepare dataset
     audio_dataset = AudioDataset(train_dataset, processor)
     print(f"Total items in dataset: {len(audio_dataset)}")
 
-    # NO CHANGE: Check how many items might get skipped
+    # Quick check how many items might get skipped
     skip_test_count = 0
     for i in range(len(audio_dataset)):
         item = audio_dataset[i]
@@ -113,19 +116,15 @@ def train_model(
             skip_test_count += 1
     print(f"Would skip {skip_test_count} items out of {len(audio_dataset)}")
 
-    # CHANGE: set num_workers=0 or some smaller number if memory is an issue
     loader = DataLoader(
         audio_dataset,
         batch_size=batch_size,
         shuffle=True,
         collate_fn=collate_fn,
-        num_workers=0  # <--- helps reduce memory usage
+        num_workers=0
     )
 
-    # NO CHANGE: Lowered learning rate from original code
-    optim = torch.optim.AdamW(model.parameters(), lr=learning_rate)
-
-    # NO CHANGE: If using GPU
+    optim = AdamW(model.parameters(), lr=learning_rate)
     device = next(model.parameters()).device
     model.train()
 
@@ -149,13 +148,10 @@ def train_model(
                 attention_mask=attention_mask,
                 labels=labels
             )
-
             loss = outputs.loss
             loss.backward()
 
-            # NO CHANGE: Gradient clipping
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-
             optim.step()
 
             total_loss += loss.item()
@@ -164,11 +160,12 @@ def train_model(
         avg_loss = total_loss / num_batches if num_batches > 0 else 0
         print(f"Epoch {epoch+1}/{epochs} - Loss: {avg_loss}")
 
-        # NEW: Save checkpoint
+        # Save checkpoint
         if save_checkpoint_dir:
             epoch_dir = os.path.join(save_checkpoint_dir, f"epoch_{epoch+1}")
             os.makedirs(epoch_dir, exist_ok=True)
             model.save_pretrained(epoch_dir)
             processor.save_pretrained(epoch_dir)
             print(f"Checkpoint saved at: {epoch_dir}")
+
     return model

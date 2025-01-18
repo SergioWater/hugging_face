@@ -1,15 +1,17 @@
-# [model_inference.py]
 import torch
 import soundfile as sf
 
 def predict(model, processor, audio_paths, device):
+    """
+    Runs inference on a list of audio paths.
+    """
     model.eval()
     predictions = []
 
     for path in audio_paths:
         try:
             speech, sr = sf.read(path)
-        except Exception as e:
+        except Exception:
             predictions.append("[Error Loading Audio]")
             continue
 
@@ -25,7 +27,6 @@ def predict(model, processor, audio_paths, device):
             logits = outputs.logits
 
         predicted_ids = torch.argmax(logits, dim=-1)
-        # NO CHANGE: Decode
         transcription = processor.decode(predicted_ids[0])
         predictions.append(transcription)
 

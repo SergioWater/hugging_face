@@ -1,19 +1,15 @@
-# [data_preprocessing_pandas.py]
 import pandas as pd
-from datasets import Dataset, DatasetDict
 import os
+from datasets import Dataset, DatasetDict
 
 def _drop_missing_audio_rows(df, data_dir):
     print("Size before dropping:", len(df))
     keep_rows = []
 
     for idx, row in df.iterrows():
-        audio_path = row["path"]  # e.g. "common_voice_en_41047776.mp3"
-        full_path = os.path.join(
-            data_dir,            # "/Users/water/Documents/Coding/Ai/hugging_face/Hugging_Face/data"
-            "validated_clips",   # subfolder with your .mp3 files
-            audio_path
-        )
+        audio_path = row["path"]
+        # "validated_clips" subfolder is inside data_dir
+        full_path = os.path.join(data_dir, "validated_clips", audio_path)
 
         print(f"Checking {full_path}... Exists? {os.path.exists(full_path)}")
 
@@ -27,13 +23,14 @@ def _drop_missing_audio_rows(df, data_dir):
     return filtered_df
 
 def load_data_with_pandas(data_dir: str):
-    # This points to "/Users/water/Documents/Coding/Ai/hugging_face/Hugging_Face/data/validated.tsv"
+    """
+    data_dir might be something like /path/to/my_project/data
+    which contains validated.tsv or train.tsv, dev.tsv, test.tsv, etc.
+    """
     validated_path = os.path.join(data_dir, "validated.tsv")
-
     validated_df = pd.read_csv(validated_path, sep='\t', dtype=str, quoting=3)
     print(f"Loaded validated.tsv with {len(validated_df)} rows")
 
-    # Show a few sentences so you can see transcripts
     print("Sample sentences from validated.tsv:")
     print(validated_df["sentence"].head(10))
 
