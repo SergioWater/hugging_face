@@ -1,8 +1,16 @@
+"""
+Loads the dataset using pandas, optionally checks file existence once, and returns a DatasetDict.
+"""
+
 import pandas as pd
 import os
 from datasets import Dataset, DatasetDict
 
 def _drop_missing_audio_rows(df, data_dir):
+    """
+    Iterates over each row in the DataFrame, ensuring the audio file exists
+    in data_dir/validated_clips. If missing, that row is excluded.
+    """
     print("Size before dropping:", len(df))
     keep_rows = []
 
@@ -22,10 +30,12 @@ def _drop_missing_audio_rows(df, data_dir):
     print("Size after dropping:", len(filtered_df))
     return filtered_df
 
-def load_data_with_pandas(data_dir: str):
+def load_data_with_pandas(data_dir: str, skip_exist_check=True):
     """
-    data_dir might be something like /path/to/my_project/data
-    which contains validated.tsv or train.tsv, dev.tsv, test.tsv, etc.
+    1) Reads 'validated.tsv' from data_dir.
+    2) If skip_exist_check=False, drops rows whose audio files don't exist (one-time check).
+       If skip_exist_check=True, we skip checking file existence entirely.
+    3) Converts the DataFrame to a Hugging Face DatasetDict with a 'train' split.
     """
     validated_path = os.path.join(data_dir, "validated.tsv")
     validated_df = pd.read_csv(validated_path, sep='\t', dtype=str, quoting=3)
@@ -34,10 +44,13 @@ def load_data_with_pandas(data_dir: str):
     print("Sample sentences from validated.tsv:")
     print(validated_df["sentence"].head(10))
 
-    # Drop rows if the audio file doesn't physically exist
-    validated_df = _drop_missing_audio_rows(validated_df, data_dir)
+    # Conditionally skip the file-existence check
+    if not skip_exist_check:
+        validated_df = _drop_missing_audio_rows(validated_df, data_dir)
+    else:
+        print("Skipping file-existence check. Assuming data is already verified...")
 
-    print("After dropping missing audio rows, here are some of the sentences:")
+    print("After optional dropping of missing audio rows, here are some sentences:")
     print(validated_df["sentence"].head(10))
 
     # Convert DataFrame -> Hugging Face Dataset

@@ -1,55 +1,75 @@
+"""
+Contains the AudioDataset for training and the train_model() function
+which orchestrates batching, training, and optional checkpoint saving.
+"""
+
 import os
 import re
 import torch
 import soundfile as sf
+from pathlib import Path
 from torch.utils.data import Dataset, DataLoader
 from transformers import AdamW
 
-# 1) AUDIO DATASET
 class AudioDataset(Dataset):
-    def __init__(self, dataset, processor):
+    """
+    A PyTorch Dataset that:
+    1) Iterates over a Hugging Face Dataset (train_dataset).
+    2) Loads audio from disk (path provided in each row).
+    3) Cleans and tokenizes text via the Wav2Vec2 processor.
+
+    'root_data_dir' is a string path to the *actual* data folder, e.g.:
+    ".../Hugging_Face/data"
+    We'll append "validated_clips" + filename to find the .wav.
+    """
+
+    def __init__(self, dataset, processor, root_data_dir):
         self.dataset = dataset
         self.processor = processor
+        self.root_data_dir = Path(root_data_dir)  # Store as Path object
         self.skipped_count = 0
 
     def clean_text(self, text):
-        # Example text cleaning: lower, strip, remove non-alphanumerics
+        """
+        Converts text to lower, strips whitespace, and removes
+        non-alphanumeric characters.
+        """
         text = text.lower().strip()
         text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
         return text
 
     def __getitem__(self, idx):
+        """
+        Returns the processed sample at index idx, or None if the file
+        doesn't exist or the audio is too short.
+        """
         sample = self.dataset[idx]
-        audio_path = sample["path"]
+
+        # We assume "path" is something like "clip_001.wav"
+        audio_filename = sample["path"]
         text = sample["sentence"]
 
-        # Instead of absolute, we rely on your data dir if it's correct
-        # For example, if the path is "clip_001.wav", we expect the code
-        # that built the dataset to handle the correct full path.
-        # But let's illustrate how we'd join it if we had a 'validated_clips' folder:
-        #   full_audio_path = os.path.join(data_dir, "validated_clips", audio_path)
-        # We'll assume the path is absolute or already correct in this snippet.
-        # This is just a placeholder approach.
-
-        # For demonstration, let's just do a direct approach:
-        full_audio_path = audio_path  # if you have an absolute path in 'path'
-        # If 'path' is not absolute, you may need to join it with something
+        # Build the FULL path with root_data_dir + validated_clips + filename
+        full_audio_path = self.root_data_dir / "validated_clips" / audio_filename
 
         # If the file doesn't exist, skip
-        if not os.path.exists(full_audio_path):
+        if not full_audio_path.exists():
             self.skipped_count += 1
             return None
 
-        audio_array, sr = sf.read(full_audio_path)
+        # Load audio data
+        audio_array, sr = sf.read(str(full_audio_path))
         if len(audio_array) < 160:
             self.skipped_count += 1
             return None
 
+        # Clean text
         text = self.clean_text(text)
         if not text:
             self.skipped_count += 1
             return None
 
+        # Process audio into input_values + attention_mask
         inputs = self.processor(
             audio_array,
             sampling_rate=16000,
@@ -58,6 +78,7 @@ class AudioDataset(Dataset):
             return_attention_mask=True
         )
 
+        # Convert text to labels using the same processor
         with self.processor.as_target_processor():
             labels = self.processor(text, return_tensors="pt").input_ids
 
@@ -70,8 +91,12 @@ class AudioDataset(Dataset):
     def __len__(self):
         return len(self.dataset)
 
-
 def collate_fn(batch):
+    """
+    A collation function that:
+    1) Removes None items (skipped audio).
+    2) Pads input_values, attention_mask, and labels to create uniform tensors.
+    """
     batch = [b for b in batch if b is not None]
     if len(batch) == 0:
         return {
@@ -94,21 +119,30 @@ def collate_fn(batch):
         "labels": labels_padded
     }
 
-
-# 2) TRAIN FUNCTION
 def train_model(
-    model, 
-    processor, 
-    train_dataset, 
-    epochs=1, 
-    batch_size=4, 
+    model,
+    processor,
+    train_dataset,
+    root_data_dir,
+    epochs=1,
+    batch_size=4,
     learning_rate=1e-5,
-    save_checkpoint_dir=None
+    save_checkpoint_dir=None,
 ):
-    audio_dataset = AudioDataset(train_dataset, processor)
+    """
+    Trains the Wav2Vec2 model for a given number of epochs on the train_dataset.
+    This version ALWAYS performs a pre-check to see how many items would be skipped
+    due to missing/invalid files (no option to skip this check).
+
+    'root_data_dir': where the "validated_clips" folder is located.
+                     Passed to AudioDataset so we can build full paths.
+    """
+
+    # Instantiate the dataset with the correct path to data
+    audio_dataset = AudioDataset(train_dataset, processor, root_data_dir)
     print(f"Total items in dataset: {len(audio_dataset)}")
 
-    # Quick check how many items might get skipped
+    # Always do the pre-check
     skip_test_count = 0
     for i in range(len(audio_dataset)):
         item = audio_dataset[i]
@@ -133,8 +167,8 @@ def train_model(
         num_batches = 0
 
         for batch_idx, batch in enumerate(loader):
+            # If an entire batch is empty, skip
             if batch["input_values"].shape[0] == 0:
-                # Empty batch => skip
                 continue
 
             optim.zero_grad()
@@ -160,7 +194,7 @@ def train_model(
         avg_loss = total_loss / num_batches if num_batches > 0 else 0
         print(f"Epoch {epoch+1}/{epochs} - Loss: {avg_loss}")
 
-        # Save checkpoint
+        # Save checkpoint each epoch if requested
         if save_checkpoint_dir:
             epoch_dir = os.path.join(save_checkpoint_dir, f"epoch_{epoch+1}")
             os.makedirs(epoch_dir, exist_ok=True)

@@ -1,9 +1,14 @@
+"""
+Performs inference/prediction on a list of audio files using a trained model & processor.
+"""
+
 import torch
 import soundfile as sf
 
 def predict(model, processor, audio_paths, device):
     """
-    Runs inference on a list of audio paths.
+    Runs inference on a list of audio_paths.
+    Returns a list of transcriptions.
     """
     model.eval()
     predictions = []
